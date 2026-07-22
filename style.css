@@ -186,6 +186,8 @@ body {
   display: flex;
   gap: 15px;
   min-height: 160px;
+  cursor: pointer;
+  position: relative;
 }
 
 .product-card img {
@@ -206,6 +208,92 @@ body {
 .product-card h3 {
   font-size: 16px;
   margin-bottom: 8px;
+}
+
+/* Selected product visual */
+.product-card.selected {
+  border: 2px solid #c59b50;
+  box-shadow: 0 12px 30px rgba(197, 155, 80, 0.12);
+  transform: translateY(-4px);
+}
+
+/* info button */
+.info-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(0, 0, 0, 0.08);
+  color: #111;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.product-card .desc-overlay {
+  /* keep existing rules; allow show-desc override */
+}
+
+.product-card.show-desc .desc-overlay {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+  pointer-events: auto;
+}
+
+/* Selected products list items */
+.selected-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 20px;
+}
+
+.selected-item .selected-name {
+  font-size: 14px;
+}
+
+.remove-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  color: #b03030;
+}
+
+/* Description overlay (tooltip) */
+.desc-overlay {
+  position: absolute;
+  bottom: calc(100% + 12px);
+  left: 50%;
+  transform: translateX(-50%) translateY(6px);
+  width: 320px;
+  max-width: calc(100% - 20px);
+  background: #ffffff;
+  border: 1px solid #e6e2db;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.08);
+  padding: 12px 14px;
+  border-radius: 10px;
+  font-size: 13px;
+  line-height: 1.4;
+  color: #222;
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    opacity 160ms ease,
+    transform 160ms ease;
+  z-index: 40;
+}
+
+.product-card:hover .desc-overlay,
+.product-card:focus-within .desc-overlay {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+  pointer-events: auto;
 }
 
 .product-card p {
