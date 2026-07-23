@@ -21,9 +21,13 @@
       <header class="site-header">
         <img src="img/loreal-logo.png" alt="L'Oréal Logo" class="logo" />
         <h1 class="site-title">Smart Routine &amp; Product Advisor</h1>
+        <button id="dirToggle" class="dir-toggle" type="button">
+          <i class="fa-solid fa-globe"></i>
+          <span id="dirToggleLabel">View in Right-to-Left</span>
+        </button>
       </header>
  
-      <!-- Category Filter -->
+      <!-- Category Filter + Product Search -->
       <div class="search-section">
         <select id="categoryFilter">
           <option value="" disabled selected>Choose a Category</option>
@@ -38,6 +42,16 @@
           <option value="suncare">Suncare</option>
           <option value="fragrance">Fragrance</option>
         </select>
+ 
+        <label for="productSearch" class="visually-hidden"
+          >Search products</label
+        >
+        <input
+          type="search"
+          id="productSearch"
+          placeholder="Search products…"
+          autocomplete="off"
+        />
       </div>
  
       <!-- Products Grid -->

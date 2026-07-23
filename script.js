@@ -1,5 +1,6 @@
-// Get references to DOM elements
+/* Get references to DOM elements */
 const categoryFilter = document.getElementById("categoryFilter");
+const searchInput = document.getElementById("productSearch");
 const productsContainer = document.getElementById("productsContainer");
 const chatForm = document.getElementById("chatForm");
 const chatWindow = document.getElementById("chatWindow");
@@ -8,10 +9,12 @@ const sendBtn = document.getElementById("sendBtn");
 const selectedProductsList = document.getElementById("selectedProductsList");
 const generateRoutineBtn = document.getElementById("generateRoutine");
 const clearSelectedBtn = document.getElementById("clearSelected");
+const dirToggleBtn = document.getElementById("dirToggle");
+const dirToggleLabel = document.getElementById("dirToggleLabel");
  
-// State
+//State
 let allProducts = [];
-let productsLoaded = false; // becomes true after the first successful fetch
+let productsLoaded = false; //becomes true after the first successful fetch
  
 //The key used to save selections in localStorage. Prefixed so it doesn't
 //collide with any other project's storage if this ever ends up hosted on
@@ -46,14 +49,17 @@ function saveSelectedIdsToStorage() {
 //Restore whatever was selected before the last reload
 const selectedProductIds = new Set(loadSelectedIdsFromStorage());
  
-//Show initial placeholder until user selects a category
+//Show initial placeholder until user selects a category or searches
 productsContainer.innerHTML = `
   <div class="placeholder-message">
-    Select a category to view products
+    Select a category or search to view products
   </div>
 `;
  
-//Load product data from JSON file
+//Load product data from JSON file.
+//We only need to download products.json once - after that we already
+//have every product in `allProducts`, so repeat calls just reuse it
+//instead of hitting the network again every time the category changes.
 async function loadProducts() {
   if (productsLoaded) return allProducts;
   const response = await fetch("products.json");
@@ -208,19 +214,62 @@ clearSelectedBtn.addEventListener("click", () => {
   renderSelectedProducts();
 });
  
-//Filter and display products when category changes
-categoryFilter.addEventListener("change", async (e) => {
+//Returns true if a product's name, brand, or description contains the
+//search term (case-insensitive). Searching all three fields means typing
+//"cera" finds CeraVe products by brand, and typing "retinol" finds
+//anything that mentions it in the description, not just the name.
+function productMatchesSearch(product, term) {
+  const haystack =
+    `${product.name} ${product.brand} ${product.description}`.toLowerCase();
+  return haystack.includes(term);
+}
+ 
+// Shows whichever products match BOTH the selected category (if any) and
+//the search box (if anything is typed) - the two filters combine rather
+//than compete, so you can narrow a category down further with a search,
+//or search the whole catalog with no category chosen at all.
+async function updateProductDisplay() {
   const products = await loadProducts();
-  const selectedCategory = e.target.value;
+  const category = categoryFilter.value;
+  const searchTerm = searchInput.value.trim().toLowerCase();
  
-  //filter() creates a new array containing only products
-  //where the category matches what the user selected
-  const filteredProducts = products.filter(
-    (product) => product.category === selectedCategory,
-  );
+  if (!category && !searchTerm) {
+    productsContainer.innerHTML = `
+      <div class="placeholder-message">
+        Select a category or search to view products
+      </div>
+    `;
+    return;
+  }
  
-  displayProducts(filteredProducts);
-});
+  let filtered = products;
+  if (category) {
+    filtered = filtered.filter((product) => product.category === category);
+  }
+  if (searchTerm) {
+    filtered = filtered.filter((product) =>
+      productMatchesSearch(product, searchTerm),
+    );
+  }
+ 
+  if (filtered.length === 0) {
+    productsContainer.innerHTML = `
+      <div class="placeholder-message">
+        No products match your search
+      </div>
+    `;
+    return;
+  }
+ 
+  displayProducts(filtered);
+}
+ 
+//Filter and display products when the category changes
+categoryFilter.addEventListener("change", updateProductDisplay);
+ 
+//Filter and display products as the user types - "input" fires on every
+//keystroke (unlike "change", which would wait until you click away)
+searchInput.addEventListener("input", updateProductDisplay);
  
 /* ----------------- Chat client ----------------- */
  
@@ -234,12 +283,12 @@ const messages = [
   {
     role: "system",
     content:
-      "You are a beauty and skincare assistant for L'Oréal Groupe. L'Oréal Groupe is the parent company behind many brands, including L'Oréal Paris, CeraVe, Garnier, Vichy, La Roche-Posay, Lancôme, Kiehl's, Kérastase, Maybelline, Redken, SkinCeuticals, Urban Decay, Yves Saint Laurent, and other L'Oréal Groupe brands. Only answer questions about the routine you've built for the user, these brands' products and services, or general topics like skincare, haircare, makeup, and fragrance. Politely decline anything unrelated.",
+      "You are a beauty assistant for L'Oréal Groupe, the parent company behind brands like L'Oréal Paris, CeraVe, Garnier, Vichy, La Roche-Posay, Lancôme, Kiehl's, Kérastase, Maybelline, Redken, SkinCeuticals, Urban Decay, Yves Saint Laurent, and other L'Oréal Groupe brands. Only answer questions about the routine you've built for the user, these brands' products and services, or general topics like skincare, haircare, makeup, and fragrance. Politely decline anything unrelated.",
   },
 ];
  
 //Adds a message bubble to the chat window and returns the element,
-//so callers can remove it later (used for the "Typing..." placeholder). */
+//so callers can remove it later (used for the "Typing..." placeholder).
 function appendMessage(text, sender, isLoading = false) {
   const messageDiv = document.createElement("div");
   messageDiv.className = `chat-message ${sender}${isLoading ? " loading" : ""}`;
@@ -263,11 +312,30 @@ showWelcomeMessage();
 //for the user to pick a category) and render the Selected Products list.
 //We need the catalog loaded so any IDs restored from localStorage can be
 //turned back into actual product names instead of just sitting there as
-//numbers with nothing to show. */
+//numbers with nothing to show.
 (async function restoreSelectedProductsOnLoad() {
   await loadProducts();
   renderSelectedProducts();
+ 
+//Browsers sometimes restore the category/search values on a plain
+//reload before script.js even runs, so re-check them on load too -
+//otherwise the grid could show the placeholder while the dropdown
+//and search box quietly disagree about what's selected.
+  updateProductDisplay();
 })();
+ 
+// Toggle the whole page between left-to-right and right-to-left layout.
+//Setting the `dir` attribute on <html> is all this needs - the CSS
+//  logical properties used throughout style.css respond to it automatically,
+//  so the product grid, selected products list, and chat bubbles all
+//  mirror themselves without any extra JS.
+dirToggleBtn.addEventListener("click", () => {
+  const switchingToRtl = document.documentElement.dir !== "rtl";
+  document.documentElement.dir = switchingToRtl ? "rtl" : "ltr";
+  dirToggleLabel.textContent = switchingToRtl
+    ? "View in Left-to-Right"
+    : "View in Right-to-Left";
+});
  
 /* ----------------- Generate Routine (send selected products) ----------------- */
 generateRoutineBtn.addEventListener("click", async () => {
