@@ -14,7 +14,7 @@
     />
     <link rel="stylesheet" href="style.css" />
   </head>
-
+ 
   <body>
     <div class="page-wrapper">
       <!------- Header / Branding ------->
@@ -22,13 +22,14 @@
         <img src="img/loreal-logo.png" alt="L'Oréal Logo" class="logo" />
         <h1 class="site-title">Smart Routine &amp; Product Advisor</h1>
       </header>
-
+ 
       <!-- Category Filter -->
       <div class="search-section">
         <select id="categoryFilter">
           <option value="" disabled selected>Choose a Category</option>
           <option value="cleanser">Cleansers</option>
           <option value="moisturizer">Moisturizers & Treatments</option>
+          <option value="skincare">Skincare</option>
           <option value="haircare">Haircare</option>
           <option value="makeup">Makeup</option>
           <option value="hair color">Hair Color</option>
@@ -38,24 +39,29 @@
           <option value="fragrance">Fragrance</option>
         </select>
       </div>
-
+ 
       <!-- Products Grid -->
       <div id="productsContainer" class="products-grid"></div>
-
+ 
       <!-- Selected Products -->
       <div class="selected-products">
-        <h2>Selected Products</h2>
+        <div class="selected-products-header">
+          <h2>Selected Products</h2>
+          <button id="clearSelected" class="clear-btn" type="button">
+            Clear All
+          </button>
+        </div>
         <div id="selectedProductsList"></div>
         <button id="generateRoutine" class="generate-btn">
           <i class="fa-solid fa-wand-magic-sparkles"></i> Generate Routine
         </button>
       </div>
-
+ 
       <!------- Chat Area ------->
       <section class="chatbox">
         <h2>Let's Build Your Routine</h2>
         <div id="chatWindow" class="chat-window"></div>
-
+ 
         <form id="chatForm" class="chat-form">
           <label for="userInput" class="visually-hidden">Message</label>
           <input
@@ -72,7 +78,7 @@
           </button>
         </form>
       </section>
-
+ 
       <!------- Footer Links ------->
       <footer class="site-footer">
         <p>&copy; 2025 L'Oréal. All rights reserved.</p>
@@ -84,7 +90,7 @@
         </nav>
       </footer>
     </div>
-
+ 
     <script src="script.js"></script>
   </body>
 </html>
